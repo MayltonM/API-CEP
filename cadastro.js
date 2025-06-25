@@ -6,17 +6,17 @@ const pegaID = function(id){
 
 //chamada de itens
 
-const formulario = function('formulario');
-const cepInput = function('cep');
-const enderecoInput = function('endereco');
-const cidadeInput = function('cidade');
-const estadoInput = function('estado');
+const formulario = pegaID('formulario');
+const cepInput = pegaID('cep');
+const enderecoInput = pegaID('endereco');
+const cidadeInput = pegaID('cidade');
+const estadoInput = pegaID('estado');
 
 //preenchimento
 
 cepInput.addEventListener('blur',async() => {
-    const cep = cepInput.value.replace(/\D/g,'');
-    if(cep.lenght === 8){
+    const cep = cepInput.value.replace(/\D/g, '');
+    if(cep.length === 8){
         try{
             const response = await fetch('https://viacep.com.br/ws/${cep}/json/');
             const data = await response.json();
@@ -24,7 +24,7 @@ cepInput.addEventListener('blur',async() => {
             cidadeInput.value = data.localidade;
             estadoInput.value = data.uf;
         }catch (error){
-            console.error('Erro ao buscar CEP: ', error);
+            console.error('Erro ao buscar CEP:', error);
         }
     }
 });
