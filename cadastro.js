@@ -1,56 +1,51 @@
-//função coringa
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('formulario');
+  const cepInput = document.getElementById('cep');
 
-const pegaID = function(id){
-    document.getElementById(id);
-}
+  // Restaurar dados do localStorage ao carregar
+  const savedData = localStorage.getItem('formData');
+  if (savedData) {
+    const formData = JSON.parse(savedData);
+    for (const field in formData) {
+      const input = document.getElementById(field);
+      if (input) input.value = formData[field];
+    }
+  }
 
-//chamada de itens
-
-const formulario = pegaID('formulario');
-const cepInput = pegaID('cep');
-const enderecoInput = pegaID('endereco');
-const cidadeInput = pegaID('cidade');
-const estadoInput = pegaID('estado');
-
-//preenchimento
-
-cepInput.addEventListener('blur',async() => {
+  // Buscar endereço automaticamente ao digitar o CEP
+  cepInput.addEventListener('blur', () => {
     const cep = cepInput.value.replace(/\D/g, '');
-    if(cep.length === 8){
-        try{
-            const response = await fetch('https://viacep.com.br/ws/${cep}/json/');
-            const data = await response.json();
-            enderecoInput.value = data.logradouro;
-            cidadeInput.value = data.localidade;
-            estadoInput.value = data.uf;
-        }catch (error){
-            console.error('Erro ao buscar CEP:', error);
-        }
+    if (cep.length === 8) {
+      fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        .then(response => response.json())
+        .then(data => {
+          if (!data.erro) {
+            document.getElementById('endereco').value = data.logradouro;
+            document.getElementById('bairro').value = data.bairro;
+            document.getElementById('cidade').value = data.localidade;
+            document.getElementById('estado').value = data.uf;
+          } else {
+            alert('CEP não encontrado.');
+          }
+        })
+        .catch(() => {
+          alert('Erro ao buscar o CEP.');
+        });
     }
-});
+  });
 
-//salvando os dados do web storage e recarregá-los
-
-formulario.addEventListener('submit', (e) => {
+  // Salvar dados no localStorage ao enviar
+  form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const dados = {
-        nome: document.getElementById('nome').value,
-        cep: cepInput.value,
-        endereco: enderecoInput.value,
-        cidade: cidadeInput.value,
-        estado: estadoInput.value,
+    const formData = {
+      nome: document.getElementById('nome').value,
+      cep: document.getElementById('cep').value,
+      rua: document.getElementById('endereco').value,
+      bairro: document.getElementById('bairro').value,
+      cidade: document.getElementById('cidade').value,
+      estado: document.getElementById('estado').value
     };
-    localStorage.setItem('dados', JSON.stringify(dados));
+    localStorage.setItem('formData', JSON.stringify(formData));
+    alert('Dados salvos com sucesso!');
+  });
 });
-
-window.onload = () => {
-    const dados = localStorage.getItem('dados');
-    if(dados){
-        const dadosJSON = JSON.parse(dados);
-        document.getElementById('nome').value = dadosJSON.nome;
-        cepInput.value = dadosJSON.cep;
-        enderecoInput.value = dadosJSON.endereco;
-        cidadeInput.value = dadosJSON.cidade;
-        estadoInput.value = dadosJSON.estado;
-    }
-};
